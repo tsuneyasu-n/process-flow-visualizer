@@ -1,0 +1,407 @@
+import { FlowData } from '@/types/flow';
+
+// デモ用フローデータ
+export const demoFlows: FlowData[] = [
+  // 1. 経費精算フロー
+  {
+    id: 'demo-expense',
+    name: '経費精算フロー',
+    description: '従業員の経費申請から精算完了までのワークフロー',
+    nodes: [
+      {
+        id: 'exp-1',
+        type: 'processNode',
+        position: { x: 400, y: 50 },
+        data: {
+          label: '経費発生',
+          nodeType: 'start',
+          assignee: '従業員',
+        },
+      },
+      {
+        id: 'exp-2',
+        type: 'processNode',
+        position: { x: 400, y: 150 },
+        data: {
+          label: '領収書回収・申請書作成',
+          nodeType: 'task',
+          assignee: '従業員',
+          duration: 30,
+          description: '領収書をスキャンし、経費申請書を作成',
+          issues: ['紙の領収書の紛失リスク', '手入力によるミス'],
+        },
+      },
+      {
+        id: 'exp-3',
+        type: 'processNode',
+        position: { x: 400, y: 270 },
+        data: {
+          label: '上長承認',
+          nodeType: 'wait',
+          assignee: '部門長',
+          duration: 1440, // 24時間
+          description: '直属の上長による承認',
+          issues: ['承認者不在時の遅延'],
+        },
+      },
+      {
+        id: 'exp-4',
+        type: 'processNode',
+        position: { x: 400, y: 390 },
+        data: {
+          label: '金額チェック',
+          nodeType: 'exclusiveGateway',
+          assignee: '経理部',
+          duration: 15,
+          description: '10万円以上は追加承認が必要',
+        },
+      },
+      {
+        id: 'exp-5',
+        type: 'processNode',
+        position: { x: 600, y: 490 },
+        data: {
+          label: '経理部長承認',
+          nodeType: 'wait',
+          assignee: '経理部長',
+          duration: 2880, // 48時間
+          description: '高額経費の追加承認',
+        },
+      },
+      {
+        id: 'exp-6',
+        type: 'processNode',
+        position: { x: 400, y: 590 },
+        data: {
+          label: '経理処理',
+          nodeType: 'task',
+          assignee: '経理部',
+          duration: 60,
+          description: '会計システムへの入力・仕訳',
+        },
+      },
+      {
+        id: 'exp-7',
+        type: 'processNode',
+        position: { x: 400, y: 710 },
+        data: {
+          label: '振込処理',
+          nodeType: 'task',
+          assignee: '経理部',
+          duration: 30,
+          description: '従業員口座への振込',
+        },
+      },
+      {
+        id: 'exp-8',
+        type: 'processNode',
+        position: { x: 400, y: 830 },
+        data: {
+          label: '精算完了',
+          nodeType: 'end',
+          assignee: '従業員',
+        },
+      },
+    ],
+    edges: [
+      { id: 'exp-e1', source: 'exp-1', target: 'exp-2', type: 'smoothstep', animated: true },
+      { id: 'exp-e2', source: 'exp-2', target: 'exp-3', type: 'smoothstep', animated: true },
+      { id: 'exp-e3', source: 'exp-3', target: 'exp-4', type: 'smoothstep', animated: true },
+      { id: 'exp-e4', source: 'exp-4', target: 'exp-5', type: 'smoothstep', animated: true, sourceHandle: 'right', data: { label: '10万円以上' } },
+      { id: 'exp-e5', source: 'exp-4', target: 'exp-6', type: 'smoothstep', animated: true, data: { label: '10万円未満' } },
+      { id: 'exp-e6', source: 'exp-5', target: 'exp-6', type: 'smoothstep', animated: true },
+      { id: 'exp-e7', source: 'exp-6', target: 'exp-7', type: 'smoothstep', animated: true },
+      { id: 'exp-e8', source: 'exp-7', target: 'exp-8', type: 'smoothstep', animated: true },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+
+  // 2. 採用プロセスフロー
+  {
+    id: 'demo-recruit',
+    name: '採用プロセス',
+    description: '求人掲載から内定通知までの採用ワークフロー',
+    nodes: [
+      {
+        id: 'rec-1',
+        type: 'processNode',
+        position: { x: 400, y: 50 },
+        data: {
+          label: '採用ニーズ発生',
+          nodeType: 'start',
+          assignee: '部門長',
+        },
+      },
+      {
+        id: 'rec-2',
+        type: 'processNode',
+        position: { x: 400, y: 150 },
+        data: {
+          label: '求人票作成',
+          nodeType: 'task',
+          assignee: '人事部',
+          duration: 120,
+          description: '職務要件、給与レンジ、勤務条件を記載',
+        },
+      },
+      {
+        id: 'rec-3',
+        type: 'processNode',
+        position: { x: 400, y: 270 },
+        data: {
+          label: '求人掲載',
+          nodeType: 'task',
+          assignee: '人事部',
+          duration: 30,
+          description: '求人媒体、自社サイトへの掲載',
+        },
+      },
+      {
+        id: 'rec-4',
+        type: 'processNode',
+        position: { x: 400, y: 390 },
+        data: {
+          label: '応募受付',
+          nodeType: 'wait',
+          assignee: '人事部',
+          duration: 10080, // 7日間
+          description: '応募書類の受付期間',
+        },
+      },
+      {
+        id: 'rec-5',
+        type: 'processNode',
+        position: { x: 400, y: 510 },
+        data: {
+          label: '書類選考',
+          nodeType: 'task',
+          assignee: '人事部',
+          duration: 180,
+          description: '履歴書・職務経歴書の確認',
+          issues: ['大量応募時の対応負荷'],
+        },
+      },
+      {
+        id: 'rec-6',
+        type: 'processNode',
+        position: { x: 400, y: 630 },
+        data: {
+          label: '一次面接',
+          nodeType: 'task',
+          assignee: '人事部・部門長',
+          duration: 60,
+          description: 'オンライン面接',
+        },
+      },
+      {
+        id: 'rec-7',
+        type: 'processNode',
+        position: { x: 400, y: 750 },
+        data: {
+          label: '合否判定',
+          nodeType: 'exclusiveGateway',
+          assignee: '部門長',
+          duration: 30,
+        },
+      },
+      {
+        id: 'rec-8',
+        type: 'processNode',
+        position: { x: 200, y: 870 },
+        data: {
+          label: '不採用通知',
+          nodeType: 'task',
+          assignee: '人事部',
+          duration: 15,
+        },
+      },
+      {
+        id: 'rec-9',
+        type: 'processNode',
+        position: { x: 600, y: 870 },
+        data: {
+          label: '最終面接',
+          nodeType: 'task',
+          assignee: '役員',
+          duration: 60,
+        },
+      },
+      {
+        id: 'rec-10',
+        type: 'processNode',
+        position: { x: 600, y: 990 },
+        data: {
+          label: '内定通知',
+          nodeType: 'task',
+          assignee: '人事部',
+          duration: 30,
+        },
+      },
+      {
+        id: 'rec-11',
+        type: 'processNode',
+        position: { x: 400, y: 1110 },
+        data: {
+          label: '採用完了',
+          nodeType: 'end',
+        },
+      },
+    ],
+    edges: [
+      { id: 'rec-e1', source: 'rec-1', target: 'rec-2', type: 'smoothstep', animated: true },
+      { id: 'rec-e2', source: 'rec-2', target: 'rec-3', type: 'smoothstep', animated: true },
+      { id: 'rec-e3', source: 'rec-3', target: 'rec-4', type: 'smoothstep', animated: true },
+      { id: 'rec-e4', source: 'rec-4', target: 'rec-5', type: 'smoothstep', animated: true },
+      { id: 'rec-e5', source: 'rec-5', target: 'rec-6', type: 'smoothstep', animated: true },
+      { id: 'rec-e6', source: 'rec-6', target: 'rec-7', type: 'smoothstep', animated: true },
+      { id: 'rec-e7', source: 'rec-7', target: 'rec-8', type: 'smoothstep', animated: true, sourceHandle: 'left', data: { label: '不合格' } },
+      { id: 'rec-e8', source: 'rec-7', target: 'rec-9', type: 'smoothstep', animated: true, sourceHandle: 'right', data: { label: '合格' } },
+      { id: 'rec-e9', source: 'rec-8', target: 'rec-11', type: 'smoothstep', animated: true },
+      { id: 'rec-e10', source: 'rec-9', target: 'rec-10', type: 'smoothstep', animated: true },
+      { id: 'rec-e11', source: 'rec-10', target: 'rec-11', type: 'smoothstep', animated: true },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+
+  // 3. 顧客問い合わせ対応フロー
+  {
+    id: 'demo-support',
+    name: '顧客問い合わせ対応',
+    description: 'カスタマーサポートの問い合わせ対応フロー',
+    nodes: [
+      {
+        id: 'sup-1',
+        type: 'processNode',
+        position: { x: 400, y: 50 },
+        data: {
+          label: '問い合わせ受付',
+          nodeType: 'start',
+          assignee: 'サポート窓口',
+        },
+      },
+      {
+        id: 'sup-2',
+        type: 'processNode',
+        position: { x: 400, y: 150 },
+        data: {
+          label: '内容確認・分類',
+          nodeType: 'task',
+          assignee: 'サポート担当',
+          duration: 10,
+          description: '問い合わせ内容の確認と種別分類',
+        },
+      },
+      {
+        id: 'sup-3',
+        type: 'processNode',
+        position: { x: 400, y: 270 },
+        data: {
+          label: '対応レベル判定',
+          nodeType: 'exclusiveGateway',
+          assignee: 'サポート担当',
+          duration: 5,
+          description: 'FAQ対応可能か、専門対応が必要か判定',
+        },
+      },
+      {
+        id: 'sup-4',
+        type: 'processNode',
+        position: { x: 200, y: 390 },
+        data: {
+          label: 'FAQ案内',
+          nodeType: 'task',
+          assignee: 'サポート担当',
+          duration: 5,
+          description: '定型回答の案内',
+        },
+      },
+      {
+        id: 'sup-5',
+        type: 'processNode',
+        position: { x: 600, y: 390 },
+        data: {
+          label: '専門部署へエスカレーション',
+          nodeType: 'task',
+          assignee: 'サポート担当',
+          duration: 15,
+          description: '技術部門や営業部門への転送',
+          issues: ['エスカレーション基準が不明確'],
+        },
+      },
+      {
+        id: 'sup-6',
+        type: 'processNode',
+        position: { x: 600, y: 510 },
+        data: {
+          label: '専門対応',
+          nodeType: 'wait',
+          assignee: '専門部署',
+          duration: 240,
+          description: '技術調査や見積作成など',
+          issues: ['対応待ち時間が長い'],
+        },
+      },
+      {
+        id: 'sup-7',
+        type: 'processNode',
+        position: { x: 400, y: 630 },
+        data: {
+          label: '回答作成',
+          nodeType: 'task',
+          assignee: 'サポート担当',
+          duration: 20,
+          description: '顧客への回答文作成',
+        },
+      },
+      {
+        id: 'sup-8',
+        type: 'processNode',
+        position: { x: 400, y: 750 },
+        data: {
+          label: '回答送信',
+          nodeType: 'task',
+          assignee: 'サポート担当',
+          duration: 5,
+        },
+      },
+      {
+        id: 'sup-9',
+        type: 'processNode',
+        position: { x: 400, y: 870 },
+        data: {
+          label: '解決確認',
+          nodeType: 'exclusiveGateway',
+          assignee: '顧客',
+          duration: 1440,
+          description: '顧客からの解決確認待ち',
+        },
+      },
+      {
+        id: 'sup-10',
+        type: 'processNode',
+        position: { x: 400, y: 990 },
+        data: {
+          label: 'クローズ',
+          nodeType: 'end',
+        },
+      },
+    ],
+    edges: [
+      { id: 'sup-e1', source: 'sup-1', target: 'sup-2', type: 'smoothstep', animated: true },
+      { id: 'sup-e2', source: 'sup-2', target: 'sup-3', type: 'smoothstep', animated: true },
+      { id: 'sup-e3', source: 'sup-3', target: 'sup-4', type: 'smoothstep', animated: true, sourceHandle: 'left', data: { label: 'FAQ対応可' } },
+      { id: 'sup-e4', source: 'sup-3', target: 'sup-5', type: 'smoothstep', animated: true, sourceHandle: 'right', data: { label: '専門対応必要' } },
+      { id: 'sup-e5', source: 'sup-4', target: 'sup-7', type: 'smoothstep', animated: true },
+      { id: 'sup-e6', source: 'sup-5', target: 'sup-6', type: 'smoothstep', animated: true },
+      { id: 'sup-e7', source: 'sup-6', target: 'sup-7', type: 'smoothstep', animated: true },
+      { id: 'sup-e8', source: 'sup-7', target: 'sup-8', type: 'smoothstep', animated: true },
+      { id: 'sup-e9', source: 'sup-8', target: 'sup-9', type: 'smoothstep', animated: true },
+      { id: 'sup-e10', source: 'sup-9', target: 'sup-10', type: 'smoothstep', animated: true, data: { label: '解決' } },
+      { id: 'sup-e11', source: 'sup-9', target: 'sup-3', type: 'smoothstep', animated: true, sourceHandle: 'left', data: { label: '未解決' } },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
