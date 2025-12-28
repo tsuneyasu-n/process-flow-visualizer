@@ -13,11 +13,10 @@ import {
 
 interface LicenseGateProps {
   children: ReactNode;
-  systemId?: string;
   appName?: string;
 }
 
-export default function LicenseGate({ children, systemId, appName = 'Application' }: LicenseGateProps) {
+export default function LicenseGate({ children, appName = 'Application' }: LicenseGateProps) {
   const [isLicensed, setIsLicensed] = useState<boolean | null>(null);
   const [licenseKey, setLicenseKey] = useState('');
   const [licenseInfo, setLicenseInfo] = useState<LicenseInfo | null>(null);
@@ -33,10 +32,19 @@ export default function LicenseGate({ children, systemId, appName = 'Application
     if (stored && stored.licenseKey) {
       if (needsReVerification()) {
         // Re-verify stored license
-        const result = await verifyLicense(stored.licenseKey, systemId);
-        if (result.success && result.valid && result.license) {
-          storeLicense(stored.licenseKey, result.license);
-          setLicenseInfo(result.license);
+        const result = await verifyLicense(stored.licenseKey);
+        if (result.success && result.valid) {
+          const info: LicenseInfo = {
+            system_id: result.system_id || '',
+            system_name: result.system_name || '',
+            license_type: result.license_type as 'PERPETUAL' | 'MONTHLY' | 'YEARLY' || 'PERPETUAL',
+            expires_at: result.expires_at || null,
+            features: result.features,
+            max_activations: result.max_activations || 0,
+            activations_used: result.activations_used || 0
+          };
+          storeLicense(stored.licenseKey, info);
+          setLicenseInfo(info);
           setIsLicensed(true);
         } else {
           clearStoredLicense();
@@ -61,8 +69,8 @@ export default function LicenseGate({ children, systemId, appName = 'Application
     setError('');
 
     try {
-      // First verify the license
-      const verifyResult = await verifyLicense(licenseKey.trim(), systemId);
+      // First verify the license (OAuth不要！license_keyだけでOK)
+      const verifyResult = await verifyLicense(licenseKey.trim());
 
       if (!verifyResult.success || !verifyResult.valid) {
         setError(verifyResult.message || 'Invalid license key');
@@ -74,10 +82,17 @@ export default function LicenseGate({ children, systemId, appName = 'Application
       const activateResult = await activateLicense(licenseKey.trim());
 
       if (activateResult.success && (activateResult.activated || activateResult.already_activated)) {
-        if (verifyResult.license) {
-          storeLicense(licenseKey.trim(), verifyResult.license);
-          setLicenseInfo(verifyResult.license);
-        }
+        const info: LicenseInfo = {
+          system_id: verifyResult.system_id || '',
+          system_name: verifyResult.system_name || '',
+          license_type: verifyResult.license_type as 'PERPETUAL' | 'MONTHLY' | 'YEARLY' || 'PERPETUAL',
+          expires_at: verifyResult.expires_at || null,
+          features: verifyResult.features,
+          max_activations: verifyResult.max_activations || 0,
+          activations_used: verifyResult.activations_used || 0
+        };
+        storeLicense(licenseKey.trim(), info);
+        setLicenseInfo(info);
         setIsLicensed(true);
       } else {
         setError(activateResult.message || 'Activation failed');
@@ -132,7 +147,7 @@ export default function LicenseGate({ children, systemId, appName = 'Application
                 type="text"
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
-                placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
+                placeholder="SD-XXXX-XXXX-XXXX"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-center tracking-wider"
                 disabled={isLoading}
               />
@@ -172,6 +187,8 @@ export default function LicenseGate({ children, systemId, appName = 'Application
   }
 
   // Licensed - show app with license info header
+  const isPerpetual = licenseInfo?.license_type === 'PERPETUAL';
+
   return (
     <div className="min-h-screen">
       {/* License status bar */}
@@ -181,12 +198,12 @@ export default function LicenseGate({ children, systemId, appName = 'Application
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
             <span className="text-green-700">
               Licensed: {licenseInfo?.system_name || appName}
-              {licenseInfo?.expires_at && !licenseInfo.is_perpetual && (
+              {licenseInfo?.expires_at && !isPerpetual && (
                 <span className="text-green-600 ml-2">
                   (Expires: {new Date(licenseInfo.expires_at).toLocaleDateString()})
                 </span>
               )}
-              {licenseInfo?.is_perpetual && (
+              {isPerpetual && (
                 <span className="text-green-600 ml-2">(Perpetual License)</span>
               )}
             </span>

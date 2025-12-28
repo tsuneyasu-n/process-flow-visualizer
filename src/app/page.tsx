@@ -11,8 +11,6 @@ import AIFlowGenerator from '@/components/AIFlowGenerator';
 import { useFlowStore } from '@/store/flowStore';
 import LicenseGate from '@/components/LicenseGate';
 
-const SYSTEM_ID = process.env.NEXT_PUBLIC_SERVICEDOCK_SYSTEM_ID || '';
-
 export default function Home() {
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
@@ -59,7 +57,7 @@ export default function Home() {
   };
 
   return (
-    <LicenseGate systemId={SYSTEM_ID} appName="Process Flow Visualizer">
+    <LicenseGate appName="Process Flow Visualizer">
       <ReactFlowProvider>
         <div className="h-screen flex flex-col">
           <Header onAnalyze={handleAnalyze} onOpenAIGenerator={() => setShowAIGenerator(true)} />

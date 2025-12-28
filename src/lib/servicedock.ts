@@ -1,30 +1,35 @@
 /**
  * ServiceDock License Integration
  * https://service-dock-vercel.vercel.app
+ *
+ * Updated: 2025-12-28 - Using new simplified API (OAuth不要)
  */
 
-const SERVICEDOCK_API_BASE = 'https://service-dock-vercel.vercel.app/api/v1';
+const SERVICEDOCK_API_BASE = 'https://service-dock-vercel.vercel.app';
 
 export interface LicenseInfo {
-  license_key: string;
-  license_id: string;
+  license_key?: string;
   system_id: string;
   system_name: string;
   license_type: 'PERPETUAL' | 'MONTHLY' | 'YEARLY';
-  status: 'active' | 'inactive' | 'expired';
   expires_at: string | null;
-  is_perpetual: boolean;
+  features?: string[];
   max_activations: number;
   activations_used: number;
-  remaining_activations: number;
 }
 
 export interface VerifyResponse {
   success: boolean;
   valid: boolean;
-  license?: LicenseInfo;
-  message?: string;
+  system_id?: string;
+  system_name?: string;
+  license_type?: string;
+  expires_at?: string;
+  features?: string[];
+  max_activations?: number;
+  activations_used?: number;
   error?: string;
+  message?: string;
 }
 
 export interface ActivationResponse {
@@ -46,9 +51,6 @@ export interface ActivationResponse {
   message?: string;
   error?: string;
 }
-
-// System ID for this application (to be set in environment)
-const SYSTEM_ID = process.env.NEXT_PUBLIC_SERVICEDOCK_SYSTEM_ID || '';
 
 /**
  * Generate unique device ID
@@ -92,16 +94,16 @@ export function getDeviceInfo(): { device_name: string; device_type: string; os_
 }
 
 /**
- * Verify license key
+ * Verify license key (シンプル！OAuth不要)
+ * 新しいエンドポイント: /api/n8n/validate-license
  */
-export async function verifyLicense(licenseKey: string, systemId?: string): Promise<VerifyResponse> {
+export async function verifyLicense(licenseKey: string): Promise<VerifyResponse> {
   try {
-    const response = await fetch(`${SERVICEDOCK_API_BASE}/licenses/verify`, {
+    const response = await fetch(`${SERVICEDOCK_API_BASE}/api/n8n/validate-license`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        license_key: licenseKey,
-        system_id: systemId || SYSTEM_ID
+        license_key: licenseKey
       })
     });
 
@@ -124,7 +126,7 @@ export async function activateLicense(licenseKey: string): Promise<ActivationRes
     const deviceId = generateDeviceId();
     const deviceInfo = getDeviceInfo();
 
-    const response = await fetch(`${SERVICEDOCK_API_BASE}/licenses/activate`, {
+    const response = await fetch(`${SERVICEDOCK_API_BASE}/api/v1/licenses/activate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
