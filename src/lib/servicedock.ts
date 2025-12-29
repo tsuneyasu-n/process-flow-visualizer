@@ -95,19 +95,36 @@ export function getDeviceInfo(): { device_name: string; device_type: string; os_
 
 /**
  * Verify license key (シンプル！OAuth不要)
- * 新しいエンドポイント: /api/n8n/validate-license
+ * エンドポイント: /api/v1/licenses/verify
+ * system_id不要 - ライセンスキーだけで検証可能
  */
 export async function verifyLicense(licenseKey: string): Promise<VerifyResponse> {
   try {
-    const response = await fetch(`${SERVICEDOCK_API_BASE}/api/n8n/validate-license`, {
+    const response = await fetch(`${SERVICEDOCK_API_BASE}/api/v1/licenses/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         license_key: licenseKey
+        // system_id不要 - ServiceDock側でライセンスのシステムを自動判定
       })
     });
 
     const data = await response.json();
+
+    // レスポンス形式を統一
+    if (data.success && data.valid && data.license) {
+      return {
+        success: true,
+        valid: true,
+        system_id: data.license.system_id,
+        system_name: data.license.system_name,
+        license_type: data.license.license_type,
+        expires_at: data.license.expires_at,
+        max_activations: data.license.max_activations,
+        activations_used: data.license.activations_used
+      };
+    }
+
     return data;
   } catch (error) {
     return {
