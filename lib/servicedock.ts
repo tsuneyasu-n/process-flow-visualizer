@@ -47,8 +47,8 @@ export interface ActivationResponse {
   error?: string;
 }
 
-// System ID for this application (to be set in environment)
-const SYSTEM_ID = process.env.NEXT_PUBLIC_SERVICEDOCK_SYSTEM_ID || '';
+// System ID is optional - ServiceDock determines system from license key
+// const SYSTEM_ID = (process.env.NEXT_PUBLIC_SERVICEDOCK_SYSTEM_ID || '').trim();
 
 /**
  * Generate unique device ID
@@ -93,6 +93,7 @@ export function getDeviceInfo(): { device_name: string; device_type: string; os_
 
 /**
  * Verify license key
+ * system_id不要 - ServiceDock側でライセンスのシステムを自動判定
  */
 export async function verifyLicense(licenseKey: string, systemId?: string): Promise<VerifyResponse> {
   try {
@@ -100,8 +101,8 @@ export async function verifyLicense(licenseKey: string, systemId?: string): Prom
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        license_key: licenseKey,
-        system_id: systemId || SYSTEM_ID
+        license_key: licenseKey
+        // system_id不要 - ライセンスキーだけで検証可能
       })
     });
 
