@@ -69,7 +69,7 @@ export default function LicenseGate({ children, appName = 'Application' }: Licen
     setError('');
 
     try {
-      // First verify the license (OAuth不要！license_keyだけでOK)
+      // First verify the license (OAuth不要E��license_keyだけでOK)
       const verifyResult = await verifyLicense(licenseKey.trim());
 
       if (!verifyResult.success || !verifyResult.valid) {
@@ -186,37 +186,4 @@ export default function LicenseGate({ children, appName = 'Application' }: Licen
     );
   }
 
-  // Licensed - show app with license info header
-  const isPerpetual = licenseInfo?.license_type === 'PERPETUAL';
-
-  return (
-    <div className="min-h-screen">
-      {/* License status bar */}
-      <div className="bg-green-50 border-b border-green-200 px-4 py-2">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            <span className="text-green-700">
-              Licensed: {licenseInfo?.system_name || appName}
-              {licenseInfo?.expires_at && !isPerpetual && (
-                <span className="text-green-600 ml-2">
-                  (Expires: {new Date(licenseInfo.expires_at).toLocaleDateString()})
-                </span>
-              )}
-              {isPerpetual && (
-                <span className="text-green-600 ml-2">(Perpetual License)</span>
-              )}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-green-700 hover:text-green-900 underline"
-          >
-            Deactivate
-          </button>
-        </div>
-      </div>
-      {children}
-    </div>
-  );
-}
+  // Licensed - show app directly\n  return <>{children}</>;\n}
